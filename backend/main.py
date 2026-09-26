@@ -14,6 +14,7 @@ from jose import jwt
 from auth_config import SECRET_KEY, ALGORITHM
 from schemas import ReviewCreate, ReviewOut, BusinessCreate, BusinessOut
 from ai_utils import analyze_review
+from ranking_utils import get_business_ranking
 
 
 Base.metadata.create_all(bind=engine)
@@ -134,3 +135,10 @@ def get_business(business_id: int, db: Session = Depends(get_db)):
 @app.get("/businesses/{business_id}/reviews", response_model=list[ReviewOut])
 def get_business_reviews(business_id: int, db: Session = Depends(get_db)):
     return db.query(Review).filter(Review.business_id == business_id).all()
+
+@app.get("/businesses/{business_id}/ranking")
+def business_ranking(business_id: int, db: Session = Depends(get_db)):
+    result = get_business_ranking(business_id, db)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Business not found")
+    return result
