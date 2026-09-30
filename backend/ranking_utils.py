@@ -54,11 +54,12 @@ def get_business_ranking(business_id: int, db: Session):
 def generate_ranking_reasoning(business_name: str, percentile: int, reviews_summary: str):
     prompt = f"""Business: {business_name}
 This business ranks in the {percentile}th percentile among similar businesses in its area, based on customer review sentiment.
-Here is a summary of what reviews mention: {reviews_summary}
+Aspects actually mentioned in its reviews: {reviews_summary}
 
-Write ONE short, natural sentence (like a recommendation blurb) explaining why this business ranks where it does. Do not mention percentiles or numbers directly - make it sound natural, like a human summary.
+Write ONE short, natural sentence explaining why this business ranks where it does.
+IMPORTANT: Only reference the aspects listed above. Do not mention food, service, price, or ambience unless it is explicitly listed in "Aspects actually mentioned." Do not invent or assume details not given.
+Do not mention percentiles or numbers directly - make it sound natural, like a human summary.
 """
-
     response = client.chat.completions.create(
         model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
