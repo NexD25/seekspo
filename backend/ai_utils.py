@@ -10,17 +10,18 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 FEW_SHOT_EXAMPLES = """Here are some examples of how to analyze reviews:
 
 Review: "Mahao adum haowe yam items loina, adubu order lakpada matam change khara. Everything else is alright"
-{"sentiment": "neutral", "aspects": ["food_quality", "service"]}
+{"sentiment": "neutral", "aspects": ["quality", "service"]}
 
 Review: "Special Fried chicken try toujabane, yaamna tasty oiye. reccomended to everyone"
-{"sentiment": "positive", "aspects": ["food_quality"]}
+{"sentiment": "positive", "aspects": ["quality"]}
 
 Review: "Price henna high oiye, taste su price ka chanade. ambience is good tho"
-{"sentiment": "negative", "aspects": ["price", "food_quality"]}
+{"sentiment": "negative", "aspects": ["price", "quality"]}
 """
 
-def analyze_review(review_text: str):
-    prompt = f"""{FEW_SHOT_EXAMPLES}
+def analyze_review(review_text: str, few_shot: bool = True):
+    examples = FEW_SHOT_EXAMPLES if few_shot else ""
+    prompt = f"""{examples}
 Now analyze this business review, which may mix Manipuri and English.
 Note: a review can be genuinely mixed — praising one thing while criticizing another. Weigh the overall balance rather than defaulting to positive just because it opens well.
 
@@ -29,10 +30,11 @@ Review: "{review_text}"
 Reply with ONLY valid JSON in this exact format, no other text:
 {{
   "sentiment": "positive" or "negative" or "neutral",
-  "aspects": ["service", "food_quality", "price", "ambience"] (include only aspects actually mentioned, can be empty list)
+  "aspects": ["service", "quality", "price", "ambience"] (include only aspects actually mentioned, can be empty list)
 }}"""
 
     response = client.chat.completions.create(
+        temperature=0,
         model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
     )
